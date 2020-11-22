@@ -4,12 +4,70 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include "ColorTransformer.h"
+#include "Converter.h"
 
 using namespace cv;
+using namespace std;
 
 int main(int argc, char* argv[])
 {
 	//some implement here
+
+	//if (argc < 2)
+	//{
+	//	cout << "Not enought paremeter";
+
+	//	return;
+	//}
+	//
+	//else
+	//{
+
+	//}
+
+	Mat img = imread("test.jpg", IMREAD_COLOR);
+
+	//vector<Mat> imageRGB;
+	//split(img, imageRGB);
+
+	//Mat imageRed, imageGreen, imageBlue;
+
+	//int width = 250, height = 250;
+	//int sizeHistogram = 256;
+	//float range[] = { 0, 256 };
+	//const float* histogramRange = { range };
+
+	//// Tính toán cho từng kênh màu và vẽ biểu đồ Histogram
+	//calcHist(&imageRGB[0], 1, 0, Mat(), imageRed, 1, &sizeHistogram, &histogramRange, true, false);
+	//calcHist(&imageRGB[1], 1, 0, Mat(), imageGreen, 1, &sizeHistogram, &histogramRange, true, false);
+	//calcHist(&imageRGB[2], 1, 0, Mat(), imageBlue, 1, &sizeHistogram, &histogramRange, true, false);
+
+	//int gg = 0;
+	//for (int i = 0; i < 256; i++)
+	//{
+	//	gg += imageBlue.at<float>(i);
+	//	//cout << imageBlue.at<float>(i) << endl;
+	//}
+
+	//cout << "size " << gg;
+
+
+
+	Mat hist;
+
+	Mat i;
+
+	ColorTransformer tr;
+	tr.CalcHistogram(img, hist);
+	tr.DrawHistogram(hist, i);
+
+
+	namedWindow("BHD");
+
+	imshow("BHD", i);
+
+	waitKey(0);
 
 	return 0;
 }
