@@ -1,4 +1,6 @@
-#include "ColorTransformer.h"
+﻿#include "ColorTransformer.h"
+
+using namespace std;
 
 int ColorTransformer::ChangeBrighness(const Mat& sourceImage, Mat& destinationImage, short b)
 {
@@ -12,7 +14,49 @@ int ColorTransformer::ChangeContrast(const Mat& sourceImage, Mat& destinationIma
 
 int ColorTransformer::CalcHistogram(const Mat& sourceImage, Mat& histMatrix)
 {
-	return 0;
+	cv::Mat process_image = sourceImage.clone(); // copy matrix
+	int nchanel = sourceImage.channels();
+	int nl = sourceImage.rows; // number of lines
+	int ncol = sourceImage.cols;
+
+	switch (nchanel) // initialize histogram matrix
+	{
+	case 1: histMatrix = Mat::zeros(1, 256, CV_32FC1); break;
+	case 3: histMatrix = Mat::zeros(3, 256, CV_32FC1); break;
+	default: return 0;
+	}
+	int hh = 0;
+
+	for (int j = 0; j < nl; j++)
+	{
+		// get pointer to line j
+		uchar* data = process_image.ptr<uchar>(j);
+		int step = 0;
+		for (int i = 0; i < ncol; i++, data+=nchanel)
+		{
+			float* his_data_i = histMatrix.ptr<float>(0);
+			int index = data[0];
+			his_data_i[index] += 1;
+
+			his_data_i = histMatrix.ptr<float>(1);
+			index = data[1];
+			his_data_i[index] += 1;
+
+			his_data_i = histMatrix.ptr<float>(2);
+			index = data[2];
+			his_data_i[index] += 1;
+			hh++;
+		} // end of line
+	}
+	int l = 0;
+	for (int i = 0; i < 256; i++)
+	{
+		l += (int)histMatrix.ptr<uchar>(0)[i];
+		cout << "B i = " << i << "Bat = " << (int)histMatrix.ptr<uchar>(0)[i] << endl;
+	}
+
+	cout << "done " << hh << "D " << l << endl;
+	return 1;
 }
 
 int ColorTransformer::HistogramEqualization(const Mat& sourceImage, Mat& destinationImage)
@@ -26,60 +70,73 @@ int ColorTransformer::DrawHistogram(const Mat& histMatrix, Mat& histImage)
 	int height = histMatrix.rows;
 	int srcChannels = histMatrix.channels();
 
-	uchar BArr[256], GArr[256], RArr[256];
+	int BArr[256], GArr[256], RArr[256];
 	int BTotal = 0, GTotal = 0, RTotal = 0;
 
 	bool isInit = false;
 
-	histImage = Mat(500, 500, CV_8UC1);
+	histImage = Mat(700, 1275, CV_8UC3, Scalar(0,0,0));
+	int max = 0;
 
 	for (int y = 0; y < height; y++)
 	{
-		uchar* pSrcRow = (uchar*)histMatrix.ptr<uchar>(y);
-
-		for (int x = 0; x < width; x++, pSrcRow += srcChannels)
+		for (int x = 0; x < width; x++)
 		{
-			uchar B = pSrcRow[0];
-			uchar G = pSrcRow[1];
-			uchar R = pSrcRow[2];
+			float v = histMatrix.at<float>(y, x);
+			if (v > max)
+			{
+				max = v;
+			}
+			if (y == 0)
+			{
+				BTotal += v;
+				BArr[x] = v;
+			}
 
-			BTotal += B;
-			GTotal += G;
-			RTotal += R;
+			if (y == 1)
+			{
+				GTotal += v;
+				GArr[x] = v;
+			}
 
-			BArr[x] = B;
-			GArr[x] = G;
-			RArr[x] = R;
+			if (y == 2)
+			{
+				RTotal += v;
+				RArr[x] = v;
+			}
 		}
 	}
 
-	int hisWidth = 600;
-	int histHeight = 600;
+	int hisWidth = 1275;
+	int histHeight = 700;
+	float scale = histHeight * 1.0 / (max + 10);
 
-	int eleWidth = 600 / 300;
+	cout << "sc = " << scale << " ma " << max;
+
+	int eleWidth = 1275 / 255;
 
 	for (int i = 0; i < 256 - 1; i++)
 	{
 		line(
 			histImage,
-			Point(i * eleWidth, -BArr[i] * 1.0 * histHeight / BTotal + histHeight),
-			Point((i + 1) * eleWidth, -BArr[i + 1] * histHeight / BTotal + histHeight),
+			Point(i * eleWidth, -BArr[i] * scale  + histHeight),
+			Point((i + 1) * eleWidth, -BArr[i + 1] * scale + histHeight),
 			Scalar(255, 0, 0),
 			2, 8, 0);
 
 		line(
 			histImage,
-			Point(i * eleWidth, -BArr[i] * histHeight / BTotal + histHeight),
-			Point((i + 1) * eleWidth, -BArr[i + 1] * histHeight / BTotal + histHeight),
+			Point(i * eleWidth, -GArr[i] * scale + histHeight),
+			Point((i + 1) * eleWidth, -GArr[i + 1] * scale + histHeight),
 			Scalar(0, 255, 0),
-			2);
+			2, 8, 0);
 
 		line(
 			histImage,
-			Point(i * eleWidth, -BArr[i] * histHeight / BTotal + histHeight),
-			Point((i + 1) * eleWidth, -BArr[i + 1] * histHeight / BTotal + histHeight),
+			Point(i * eleWidth, -RArr[i] * scale + histHeight),
+			Point((i + 1) * eleWidth, -RArr[i + 1] * scale + histHeight),
 			Scalar(0, 0, 255),
-			2);
+			2, 8, 0);
 	}
 
 	return 0;
