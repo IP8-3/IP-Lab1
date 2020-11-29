@@ -6,70 +6,281 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "ColorTransformer.h"
 #include "Converter.h"
+#include "../../../../../../opencv/build/include/opencv2/highgui.hpp"
 
 using namespace cv;
 using namespace std;
 
 int main(int argc, char* argv[])
 {
-	//some implement here
+    if (argc < 3)
+    {
+        cout << "Invalid command\n";
+        return -1;
+    }
 
-	//if (argc < 2)
-	//{
-	//	cout << "Not enought paremeter";
+    Converter converter;
+    ColorTransformer colorTrans;
 
-	//	return;
-	//}
-	//
-	//else
-	//{
-
-	//}
-
-	Mat img = imread("test.jpg", IMREAD_COLOR);
-
-	//vector<Mat> imageRGB;
-	//split(img, imageRGB);
-
-	//Mat imageRed, imageGreen, imageBlue;
-
-	//int width = 250, height = 250;
-	//int sizeHistogram = 256;
-	//float range[] = { 0, 256 };
-	//const float* histogramRange = { range };
-
-	//// Tính toán cho từng kênh màu và vẽ biểu đồ Histogram
-	//calcHist(&imageRGB[0], 1, 0, Mat(), imageRed, 1, &sizeHistogram, &histogramRange, true, false);
-	//calcHist(&imageRGB[1], 1, 0, Mat(), imageGreen, 1, &sizeHistogram, &histogramRange, true, false);
-	//calcHist(&imageRGB[2], 1, 0, Mat(), imageBlue, 1, &sizeHistogram, &histogramRange, true, false);
-
-	//int gg = 0;
-	//for (int i = 0; i < 256; i++)
-	//{
-	//	gg += imageBlue.at<float>(i);
-	//	//cout << imageBlue.at<float>(i) << endl;
-	//}
-
-	//cout << "size " << gg;
+    //input path
+    string inputPath = argv[2];
 
 
+    
+    //command
+    string command = argv[1];
 
-	Mat hist;
+    if (command == "--rgb2gray")
+    {
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
 
-	Mat i;
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
 
-	ColorTransformer tr;
-	tr.CalcHistogram(img, hist);
-	tr.DrawHistogram(hist, i);
+        Mat destImg;
+
+        if (converter.Convert(srcImg, destImg, 0) == 0)
+        {
+            imshow("Image RGB", srcImg);
+            imshow("Image GRAY", destImg);
+            waitKey();
+        }
+        else 
+        {
+            cout << "Cannot convert file\n";
+        }
+    }
+    else if (command == "--gray2rgb")
+    {
+        Mat srcImg = imread(inputPath, IMREAD_GRAYSCALE);
+
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
+
+        Mat destImg;
+
+        if (converter.Convert(srcImg, destImg, 1) == 0)
+        {
+            imshow("Image DEST", srcImg);
+            imshow("Image RGB", destImg);
+            waitKey();
+        }
+        else
+        {
+            cout << "Cannot convert file\n";
+        }
+    }
+    else if (command == "--rgb2hsv")
+    {
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
+
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
+
+        Mat destImg;
+
+        if (converter.Convert(srcImg, destImg, 2) == 0)
+        {
+            imshow("Image RGB", srcImg);
+            imshow("Image HSV", destImg);
+            waitKey();
+        }
+        else
+        {
+            cout << "Cannot convert image\n";
+        }
+    }
+    else if (command == "--hsv2rgb")
+    {
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
+
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
+
+        Mat destImg;
+
+        if (converter.Convert(srcImg, destImg, 3) == 0)
+        {
+            imshow("Image HSV", srcImg);
+            imshow("Image RGB", destImg);
+            waitKey();
+        }
+        else
+        {
+            cout << "Cannot convert image\n";
+        }
+    }
+    else if (command == "--bright")
+    {
+        //get argument
+        int b;
+        try
+        {
+            b = atoi(argv[3]);
+        }
+        catch(Exception e)
+        {
+            cout << "Invalid brigthness\n";
+            return -1;
+        }
+
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
 
 
-	namedWindow("BHD");
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
 
-	imshow("BHD", i);
+        Mat destImg;
 
-	waitKey(0);
+        if (colorTrans.ChangeBrighness(srcImg, destImg, (short)b) == 1)
+        {
+            imshow("Source image", srcImg);
+            imshow("Image after change", destImg);
+            waitKey();
+        }
+        else
+        {
+            cout << "Cannot change brightness\n";
+        }
+    }
+    else if (command == "--contrast")
+    {
+        //get argument
+        float c;
+        try
+        {
+            c = atof(argv[3]);
+        }
+        catch(Exception e)
+        {
+            cout << "Invalid contrast\n";
+            return -1;
+        }
 
-	return 0;
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
+
+
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
+
+        Mat destImg;
+
+        if (colorTrans.ChangeContrast(srcImg, destImg, c) == 1)
+        {
+            imshow("Source image", srcImg);
+            imshow("Image after change", destImg);
+            waitKey();
+        }
+        else
+        {
+            cout << "Cannot change brightness\n";
+        }
+
+    }
+    else if (command == "--hist")
+    {
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
+
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
+
+        Mat destImg;
+
+        if (colorTrans.CalcHistogram(srcImg, destImg) == 1)
+        {
+            imshow("Source image", srcImg);
+            imshow("Histogram of image", destImg);
+            waitKey();
+        }
+        else
+        {
+            cout << "Cannot calculate histogram\n";
+        }
+    }
+    else if (command == "--equalhist")
+    {
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
+
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
+
+        Mat destImg;
+
+        if (colorTrans.HistogramEqualization(srcImg, destImg) == 1)
+        {
+            imshow("Source image", srcImg);
+            imshow("Histogram of image", destImg);
+            waitKey();
+        }
+        else
+        {
+            cout << "Cannot draw histogram of image\n";
+        }
+    }
+    else if (command == "--drawhist")
+    {
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
+
+        if (srcImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
+
+        Mat hist;
+
+        Mat destImg;
+
+        if (colorTrans.CalcHistogram(srcImg, hist) == 0)
+        {
+            cout << "Cannot calculate histogram\n";
+            return -1;
+        }
+
+        if (colorTrans.DrawHistogram(hist, destImg) == 1)
+        {
+            imshow("Source image", srcImg);
+            imshow("Image after change", destImg);
+            waitKey();
+        }
+        else
+        {
+            cout << "Can't draw histogram\n";
+        }
+
+    }
+    else if (command == "--compare")
+    {
+        string secondPath = argv[3];
+
+        Mat srcImg = imread(inputPath, IMREAD_COLOR);
+        Mat destImg = imread(inputPath, IMREAD_COLOR);
+
+
+        if (srcImg.empty() || destImg.empty())
+        {
+            cout << "Can't open or read image\n";
+        }
+        
+        cout << "Do tuong dong: " << colorTrans.CompareImage(srcImg, destImg) << endl;
+    }
+
+    return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

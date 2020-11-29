@@ -52,10 +52,8 @@ int ColorTransformer::CalcHistogram(const Mat& sourceImage, Mat& histMatrix)
 	for (int i = 0; i < 256; i++)
 	{
 		l += (int)histMatrix.ptr<uchar>(0)[i];
-		cout << "B i = " << i << "Bat = " << (int)histMatrix.ptr<uchar>(0)[i] << endl;
 	}
 
-	cout << "done " << hh << "D " << l << endl;
 	return 1;
 }
 
@@ -111,8 +109,6 @@ int ColorTransformer::DrawHistogram(const Mat& histMatrix, Mat& histImage)
 	int histHeight = 700;
 	float scale = histHeight * 1.0 / (max + 10);
 
-	cout << "sc = " << scale << " ma " << max;
-
 	int eleWidth = 1275 / 255;
 
 	for (int i = 0; i < 256 - 1; i++)
@@ -139,12 +135,34 @@ int ColorTransformer::DrawHistogram(const Mat& histMatrix, Mat& histImage)
 			2, 8, 0);
 	}
 
-	return 0;
+	return 1;
 }
 
 float ColorTransformer::CompareImage(const Mat& image1, Mat& image2)
 {
-	return 0.0f;
+	Mat hsv_image1, hsv_image2;
+	//Chuyen doi he mau RGB sang he mau HSV
+	cvtColor(image1, hsv_image1, COLOR_BGR2HSV);
+	cvtColor(image2, hsv_image2, COLOR_BGR2HSV);
+
+	//Khoi tao thong so de tinh toan histogram 2 hinh
+	int h = 50, s = 60;
+	int histSize[] = { h, s };
+	float h_ranges[] = { 0, 180 };
+	float s_ranges[] = { 0, 256 };
+	const float* ranges[] = { h_ranges, s_ranges };
+	int channels[] = { 0, 1 };
+	Mat hist_base, hist_test1;
+
+	//Tinh histogram cua 2 hinh anh
+	calcHist(&hsv_image1, 1, channels, Mat(), hist_base, 2, histSize, ranges, true, false);
+	normalize(hist_base, hist_base, 0, 1, NORM_MINMAX, -1, Mat());
+	calcHist(&hsv_image2, 1, channels, Mat(), hist_test1, 2, histSize, ranges, true, false);
+	normalize(hist_test1, hist_test1, 0, 1, NORM_MINMAX, -1, Mat());
+
+	double base_test1 = compareHist(hist_base, hist_test1, 0);
+
+	return base_test1;
 }
 
 ColorTransformer::ColorTransformer()

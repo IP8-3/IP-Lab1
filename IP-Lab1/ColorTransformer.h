@@ -56,8 +56,7 @@ public:
 	int HistogramEqualization(const Mat& sourceImage, Mat& destinationImage);
 	
 
-
-		/*
+	/*
 	Hàm cân bằng lược đồ màu tổng quát cho ảnh bất kỳ
 	Tham so :
 		histMatrix : ma trận histogram đã tính được
